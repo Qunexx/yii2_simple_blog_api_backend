@@ -27,19 +27,16 @@ class AuthService
             ];
         }
         $user = new User();
-        $user->name = $validator->name;
-        $user->email = $validator->email;
-        $user->setPassword($validator->password);
-        $user->created_at = date('Y-m-d H:i:s');
-        if ($user->save()) {
+        $result = $user->createUser($validator);
+        if ($result['success']) {
             return [
                 'success' => true,
-                'access_token' => '',
+                'access_token' => $result['access_token'],
             ];
         } else {
             return [
                 'success' => false,
-                'errors' => $user->getErrors(),
+                'errors' => $result['errors'],
             ];
         }
     }

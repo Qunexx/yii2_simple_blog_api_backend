@@ -17,6 +17,7 @@ class m130524_201442_init extends Migration
             'name' => $this->string()->notNull(),
             'email' => $this->string()->notNull()->unique(),
             'is_admin' => $this->tinyInteger(1)->defaultValue(0),
+            'auth_key' => $this->string()->null(),
             'password_hash' => $this->string()->notNull(),
             'created_at' => $this->timestamp()->notNull(),
         ], $tableOptions);

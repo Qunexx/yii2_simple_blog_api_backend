@@ -4,6 +4,8 @@ namespace backend\controllers;
 
 use common\models\LoginForm;
 use Yii;
+use yii\filters\auth\HttpBasicAuth;
+use yii\filters\auth\HttpBearerAuth;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -20,6 +22,9 @@ class SiteController extends Controller
     public function behaviors()
     {
         return [
+            'authenticator' => [
+                'class' => HttpBearerAuth::class,
+            ],
             'access' => [
                 'class' => AccessControl::class,
                 'rules' => [
@@ -30,7 +35,7 @@ class SiteController extends Controller
                     [
                         'actions' => ['logout', 'index'],
                         'allow' => true,
-                        'roles' => ['?'],
+                        'roles' => ['@'],
                     ],
                 ],
             ],
@@ -40,6 +45,7 @@ class SiteController extends Controller
                     'logout' => ['post'],
                 ],
             ],
+
         ];
     }
 

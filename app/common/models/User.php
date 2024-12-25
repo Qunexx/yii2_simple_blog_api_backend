@@ -7,6 +7,7 @@ use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
+use common\models\AccessToken;
 
 /**
  * User model
@@ -15,6 +16,7 @@ use yii\web\IdentityInterface;
  * @property string $name
  * @property string $password_hash
  * @property string $email
+ * @property integer $auth_key
  * @property integer $is_admin
  * @property integer $created_at
  */
@@ -47,6 +49,11 @@ class User extends ActiveRecord implements IdentityInterface
         ];
     }
 
+    public function getAccessTokens()
+    {
+        return $this->hasMany(AccessToken::class, ['user_id' => 'id']);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -60,20 +67,20 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
-    }
+        $accessToken = AccessToken::find()
+            ->where(['token' => $token])
+            ->one();
 
-    /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
-     */
-    public static function findByUsername($username)
-    {
-        return static::findOne(['username' => $username]);
-    }
+        if ($accessToken) {
+            $user = User::find()
+                ->where(['id' => $accessToken->user_id])
+                ->one();
 
+            return $user;
+        }
+
+        return null;
+    }
 
 
     /**
@@ -119,6 +126,29 @@ class User extends ActiveRecord implements IdentityInterface
     public function setPassword($password)
     {
         $this->password_hash = Yii::$app->security->generatePasswordHash($password);
+    }
+
+    public function createUser($validator): array
+    {
+        $user = new User();
+        $user->name = $validator->name;
+        $user->email = $validator->email;
+        $user->setPassword($validator->password);
+        $user->created_at = date('Y-m-d H:i:s');
+        if ($user->save()) {
+            $accessToken = new AccessToken();
+            $token = $accessToken->generateAccessToken($user->id);
+            return [
+                'success' => true,
+                'user' => $user,
+                'access_token' => $token,
+            ];
+        } else {
+            return [
+                'success' => false,
+                'errors' => $user->getErrors(),
+            ];
+        }
     }
 
 
