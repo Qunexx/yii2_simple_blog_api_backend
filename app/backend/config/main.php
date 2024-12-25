@@ -14,16 +14,14 @@ return [
     'modules' => [],
     'components' => [
         'request' => [
-            'csrfParam' => '_csrf-backend',
+            'enableCsrfValidation' => false,
         ],
         'user' => [
             'identityClass' => 'common\models\User',
-            'enableAutoLogin' => true,
-            'identityCookie' => ['name' => '_identity-backend', 'httpOnly' => true],
+            'enableAutoLogin' => false,
         ],
-        'session' => [
-            // this is the name of the session cookie used for login on the backend
-            'name' => 'advanced-backend',
+        'authService' => [
+            'class' => 'backend\services\AuthService',
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
