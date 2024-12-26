@@ -2,12 +2,11 @@
 
 namespace backend\controllers;
 
-use common\models\LoginForm;
+use backend\validators\LoginForm;
 use Yii;
-use yii\filters\auth\HttpBasicAuth;
+use yii\filters\AccessControl;
 use yii\filters\auth\HttpBearerAuth;
 use yii\filters\VerbFilter;
-use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 

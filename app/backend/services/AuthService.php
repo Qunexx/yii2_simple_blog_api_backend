@@ -1,6 +1,7 @@
 <?php
 
 namespace backend\services;
+use backend\validators\LoginForm;
 use backend\validators\RegisterForm;
 use common\models\User;
 use yii\web\Request;
@@ -17,7 +18,7 @@ class AuthService
                 'errors' => $validator->getErrors(),
             ];
         }
-        $existingUser = User::findOne(['email' => $validator->email]);
+        $existingUser = User::findUserByEmail($validator->email);
         if ($existingUser) {
             return [
                 'success' => false,
@@ -39,6 +40,47 @@ class AuthService
                 'errors' => $result['errors'],
             ];
         }
+    }
+
+    public function loginUser(array $request): array
+    {
+        $validator = new LoginForm();
+        $validator->load($request, '');
+        if (!$validator->validate()) {
+            return [
+                'success' => false,
+                'errors' => $validator->getErrors(),
+            ];
+        }
+        $login = User::login($validator);
+        if (!$login['success']) {
+            return [
+                'success' => false,
+                'errors' => ['Неверная почта или пароль'],
+            ];
+        }
+
+       return [
+        'success' => true,
+        'access_token' => $login['access_token'],
+        ];
+    }
+
+    public function logoutUser($authorization_header): array
+    {
+
+        $accessToken = str_replace('Bearer ', '', $authorization_header);
+        $logout = User::logout($accessToken);
+        if (!$logout['success']) {
+            return [
+                'success' => false,
+                'errors' => $logout['errors'],
+            ];
+        }
+
+        return [
+            'success' => true,
+        ];
     }
 }
 

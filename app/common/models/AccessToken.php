@@ -59,5 +59,27 @@ class AccessToken extends ActiveRecord
         }
     }
 
+    public static function forgetAccessToken(string $access_token): array
+    {
+        $existAccessToken = AccessToken::findOne(['token' => $access_token]);
+        if (!$existAccessToken) {
+            return [
+                'success' => false,
+                'errors' => ['Токен не найден'],
+            ];
+        }
+        if ($existAccessToken->delete()) {
+            return [
+                'success' => true,
+                'message' => 'Токен успешно удалён',
+            ];
+        } else {
+            return [
+                'success' => false,
+                'errors' => ['Ошибка при удалении токена'],
+            ];
+        }
+    }
+
 
 }

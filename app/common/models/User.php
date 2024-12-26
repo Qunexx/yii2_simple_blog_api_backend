@@ -2,12 +2,14 @@
 
 namespace common\models;
 
+use backend\validators\LoginForm;
+use backend\validators\RegisterForm;
+use common\models\AccessToken;
 use Yii;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
-use common\models\AccessToken;
 
 /**
  * User model
@@ -123,12 +125,12 @@ class User extends ActiveRecord implements IdentityInterface
      *
      * @param string $password
      */
-    public function setPassword($password)
+    public function setPassword(string $password)
     {
         $this->password_hash = Yii::$app->security->generatePasswordHash($password);
     }
 
-    public function createUser($validator): array
+    public function createUser(RegisterForm $validator): array
     {
         $user = new User();
         $user->name = $validator->name;
@@ -149,6 +151,46 @@ class User extends ActiveRecord implements IdentityInterface
                 'errors' => $user->getErrors(),
             ];
         }
+    }
+
+    public static function findUserByEmail(string $email) : User | bool
+    {
+        $existingUser = User::findOne(['email' => $email]);
+        return $existingUser ?: false;
+    }
+
+    public static function login(LoginForm $validator): array
+    {
+        $user = User::findUserByEmail($validator->email);
+        if (!$user || !$user->validatePassword($validator->password)) {
+            return [
+                'success' => false,
+                'errors' => ['Неверный логин или пароль'],
+            ];
+        }
+        $accessToken = new AccessToken();
+        $token = $accessToken->generateAccessToken($user->id);
+        return [
+            'success' => true,
+            'access_token' => $token,
+        ];
+    }
+
+    public static function logout(string $access_token): array
+    {
+        $forget_acccess_token = AccessToken::forgetAccessToken($access_token);
+        if($forget_acccess_token['success']){
+            return [
+                'success' => true,
+                'message' => $forget_acccess_token['message'],
+            ];
+        } else {
+            return [
+                'success' => false,
+                'errors' => $forget_acccess_token['errors'],
+            ];
+        }
+
     }
 
 

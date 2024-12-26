@@ -3,7 +3,7 @@
 namespace backend\controllers\api;
 
 use backend\services\AuthService;
-use common\models\LoginForm;
+use backend\validators\LoginForm;
 use Yii;
 use yii\filters\AccessControl;
 use yii\filters\ContentNegotiator;
@@ -40,6 +40,7 @@ class AuthController extends Controller
                 'actions' => [
                     'logout' => ['post'],
                     'register'=> ['post'],
+                    'login'=> ['post'],
                 ],
             ],
             'contentNegotiator' => [
@@ -69,41 +70,42 @@ class AuthController extends Controller
 
     }
 
-    /**
-     * Login action.
-     *
-     * @return string|Response
-     */
-    public function actionLogin()
+    public function actionLogin(Request $request, AuthService $authService) : Response
     {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+        $result = $authService->loginUser($request->post());
+        if ($result['success']) {
+            return $this->asJson([
+                'access_token' => $result['access_token']
+            ]);
+        } else {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'status' => 'error',
+                'errors' => $result['errors'],
+            ]);
         }
-
-        $this->layout = 'blank';
-
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
-
-        $model->password = '';
-
-        return $this->render('login', [
-            'model' => $model,
-        ]);
     }
-
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
+    public function actionLogout(Request $request, AuthService $authService) : Response
     {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
+        $authHeader = $request->headers->get('Authorization');
+        if (!$authHeader) {
+            return $this->asJson([
+                'status' => 'error',
+                'errors' => ['Заголовок Authorization отсутствует'],
+            ]);
+        }
+        $result = $authService->logoutUser($authHeader);
+        if($result['success']) {
+            return $this->asJson([
+                'status' => 'ok',
+            ]);
+        } else {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'status' => 'error',
+                'errors' => $result['errors'],
+            ]);
+        }
     }
 
 }
