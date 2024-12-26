@@ -24,6 +24,7 @@ return [
         'user' => [
             'identityClass' => 'common\models\User',
             'enableAutoLogin' => false,
+            'loginUrl' => ['/admin/login'],
         ],
         'authService' => [
             'class' => 'backend\services\AuthService',
