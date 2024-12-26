@@ -35,20 +35,15 @@ return [
   cd app
 docker-compose build
 ```
-
-### 4.Собрать докер образы
-```bash
-  docker-compose build
-```
-### 5.Запустить докер образы
+### 4.Запустить докер образы
 ```bash
   docker-compose up -d
 ```
-### 6.Войти в контейнер backend и установить зависимости композер
+### 5.Войти в контейнер backend и установить зависимости композер
 ```bash
    docker-compose exec backend bash -c "composer install"
  ```
-### 7.Можно тестить апи и админку
+### 6.Можно тестить апи и админку
 
 <h3>Админка доступна для пользователей с флагом is_admin по роуту http://localhost/admin/</h3>
     <h3>Апи доступны по роутам:</h2>
