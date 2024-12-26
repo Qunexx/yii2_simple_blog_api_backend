@@ -23,6 +23,9 @@ return [
         'authService' => [
             'class' => 'backend\services\AuthService',
         ],
+        'blogService' => [
+            'class' => 'backend\services\BlogService',
+        ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
             'targets' => [
@@ -41,6 +44,9 @@ return [
             'showScriptName' => false,
             'enableStrictParsing' => false,
             'rules' => [
+                'GET api/blog/posts' => 'api/blog/get-posts',
+                'GET api/blog/my-posts' => 'api/blog/get-my-posts',
+                'POST api/blog/post/create' => 'api/blog/create-post',
             ],
         ],
     ],

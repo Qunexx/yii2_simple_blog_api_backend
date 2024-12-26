@@ -3,9 +3,13 @@
 namespace backend\controllers\api;
 
 use backend\services\AuthService;
+use backend\services\BlogService;
+use backend\validators\createPostForm;
 use backend\validators\LoginForm;
+use common\models\AccessToken;
 use Yii;
 use yii\filters\AccessControl;
+use yii\filters\auth\HttpBearerAuth;
 use yii\filters\ContentNegotiator;
 use yii\filters\VerbFilter;
 use yii\web\Controller;
@@ -13,7 +17,7 @@ use yii\web\Request;
 use yii\web\Response;
 
 
-class AuthController extends Controller
+class BlogController extends Controller
 {
     /**
      * {@inheritdoc}
@@ -24,9 +28,9 @@ class AuthController extends Controller
             'verbs' => [
                 'class' => VerbFilter::class,
                 'actions' => [
-                    'logout' => ['post'],
-                    'register'=> ['post'],
-                    'login'=> ['post'],
+                    'create-post' => ['post'],
+                    'get-my-posts' => ['get'],
+                    'get-posts' => ['get'],
                 ],
             ],
             'contentNegotiator' => [
@@ -39,51 +43,23 @@ class AuthController extends Controller
     }
 
 
-    public function actionRegister(Request $request, AuthService $authService): Response
-    {
-        $result = $authService->registerUser($request->post());
-        if ($result['success']) {
-            return $this->asJson([
-               'access_token' => $result['access_token']
-            ]);
-        } else {
-            Yii::$app->response->statusCode = 400;
-            return $this->asJson([
-                'status' => 'error',
-                'errors' => $result['errors'],
-            ]);
-        }
-
-    }
-
-    public function actionLogin(Request $request, AuthService $authService) : Response
-    {
-        $result = $authService->loginUser($request->post());
-        if ($result['success']) {
-            return $this->asJson([
-                'access_token' => $result['access_token']
-            ]);
-        } else {
-            Yii::$app->response->statusCode = 400;
-            return $this->asJson([
-                'status' => 'error',
-                'errors' => $result['errors'],
-            ]);
-        }
-    }
-    public function actionLogout(Request $request, AuthService $authService) : Response
+    public function actionCreatePost(Request $request, BlogService $blogService, AuthService $authService): Response
     {
         $authHeader = $request->headers->get('Authorization');
-        if (!$authHeader) {
+        $user = $authService->checkAuth($authHeader);
+        if ($user['errors']) {
+            Yii::$app->response->statusCode = 401;
             return $this->asJson([
                 'status' => 'error',
-                'errors' => ['Заголовок Authorization отсутствует'],
+                'errors' => $user['errors'],
             ]);
         }
-        $result = $authService->logoutUser($authHeader);
-        if($result['success']) {
+
+        $result = $blogService->createPost($user['id'], $request->post());
+        if ($result['success']) {
             return $this->asJson([
-                'status' => 'ok',
+                'status' => 'success',
+                'post' => $result['posts'],
             ]);
         } else {
             Yii::$app->response->statusCode = 400;
@@ -93,5 +69,54 @@ class AuthController extends Controller
             ]);
         }
     }
+
+    public function actionGetPosts(Request $request, AuthService $authService, BlogService $blogService): Response
+    {
+        $result = $blogService->getPosts($request->get());
+
+        if ($result['success']) {
+            return $this->asJson([
+                'status' => 'success',
+                'posts' => $result['posts'],
+            ]);
+        } else {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'status' => 'error',
+                'errors' => $result['errors'],
+            ]);
+        }
+
+    }
+
+    public function actionGetMyPosts(Request $request, AuthService $authService, BlogService $blogService): Response
+    {
+        $authHeader = $request->headers->get('Authorization');
+        $user = $authService->checkAuth($authHeader);
+        if ($user['errors']) {
+            Yii::$app->response->statusCode = 401;
+            return $this->asJson([
+                'status' => 'error',
+                'errors' => $user['errors'],
+            ]);
+        }
+
+        $result = $blogService->getMyPosts($user['id'], $request->get());
+
+        if ($result['success']) {
+            return $this->asJson([
+                'status' => 'success',
+                'posts' => $result['posts'],
+            ]);
+        } else {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'status' => 'error',
+                'errors' => $result['errors'],
+            ]);
+        }
+
+    }
+
 
 }

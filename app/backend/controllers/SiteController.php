@@ -21,9 +21,6 @@ class SiteController extends Controller
     public function behaviors()
     {
         return [
-            'authenticator' => [
-                'class' => HttpBearerAuth::class,
-            ],
             'access' => [
                 'class' => AccessControl::class,
                 'rules' => [
@@ -34,7 +31,7 @@ class SiteController extends Controller
                     [
                         'actions' => ['logout', 'index'],
                         'allow' => true,
-                        'roles' => ['@'],
+                        'roles' => ['?'],
                     ],
                 ],
             ],

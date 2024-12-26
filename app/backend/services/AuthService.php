@@ -4,6 +4,7 @@ namespace backend\services;
 use backend\validators\LoginForm;
 use backend\validators\RegisterForm;
 use common\models\User;
+use Yii;
 use yii\web\Request;
 
 class AuthService
@@ -68,7 +69,6 @@ class AuthService
 
     public function logoutUser($authorization_header): array
     {
-
         $accessToken = str_replace('Bearer ', '', $authorization_header);
         $logout = User::logout($accessToken);
         if (!$logout['success']) {
@@ -81,6 +81,28 @@ class AuthService
         return [
             'success' => true,
         ];
+    }
+
+    public function checkAuth($authHeader): array | User
+    {
+        if (!$authHeader) {
+        Yii::$app->response->statusCode = 400;
+        return [
+            'status' => 'error',
+            'errors' => ['Заголовок Authorization отсутствует'],
+        ];
+        }
+        $accessToken = str_replace('Bearer ', '', $authHeader);
+        $user = User::findIdentityByAccessToken($accessToken);
+        if ($user) {
+            return $user;
+        } else {
+            return [
+                'status' => 'error',
+                'errors' => ['Недействительный Authorization token'],
+            ];
+        }
+
     }
 }
 

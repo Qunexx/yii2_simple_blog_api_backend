@@ -80,6 +80,4 @@ class AccessToken extends ActiveRecord
             ];
         }
     }
-
-
 }
