@@ -13,7 +13,7 @@ use yii\web\Response;
 /**
  * Site controller
  */
-class SiteController extends Controller
+class AdminController extends Controller
 {
     /**
      * {@inheritdoc}
@@ -25,13 +25,13 @@ class SiteController extends Controller
                 'class' => AccessControl::class,
                 'rules' => [
                     [
-                        'actions' => ['login', 'error'],
+                        'actions' => ['login', 'error', 'index'],
                         'allow' => true,
                     ],
                     [
-                        'actions' => ['logout', 'index'],
+                        'actions' => ['logout'],
                         'allow' => true,
-                        'roles' => ['?'],
+                        'roles' => ['@'],
                     ],
                 ],
             ],
@@ -75,7 +75,7 @@ class SiteController extends Controller
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+            return $this->response->redirect('/admin/index');
         }
 
         $this->layout = 'blank';
@@ -101,6 +101,6 @@ class SiteController extends Controller
     {
         Yii::$app->user->logout();
 
-        return $this->goHome();
+        return $this->response->redirect('/admin/login');
     }
 }
