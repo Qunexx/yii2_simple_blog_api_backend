@@ -7,7 +7,7 @@
    ```bash
    git clone git@github.com:Qunexx/yii2_simple_blog_api_backend.git
   ```
-### 2. Перейти в app/common, затем создать там файл main-local.php с содержимым ниже:
+### 2. Перейти в app/common/config, затем создать там файл main-local.php с содержимым ниже:
    ```bash
   <?php
 
