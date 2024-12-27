@@ -43,7 +43,12 @@ docker-compose build
 ```bash
    docker-compose exec backend bash -c "composer install"
  ```
-### 6.Можно тестить апи и админку
+### 6.Применить миграции
+```bash
+   docker-compose exec backend bash -c "php yii migrate"
+```
+### 7.Можно тестить апи и админку
+
 
 <h3>Админка доступна для пользователей с флагом is_admin по роуту http://localhost/admin/</h3>
     <h3>Апи доступны по роутам:</h2>
